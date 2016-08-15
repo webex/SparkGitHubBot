@@ -1,4 +1,4 @@
-# GitHub-Bot
+# SparkGitHubBot
 It listens for Commits (push event) &amp; Comments(commit comment event) on a particular repo and posts the details into a Spark room.
 
 You will also need to set up a github webhook for the specific repo.
