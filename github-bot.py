@@ -6,14 +6,15 @@ import hashlib
 
 app = Flask(__name__)
 
-SECRET_TOKEN = "EventsToSparkRoom" #Secret provided in the Github webhook config. Change this to your own secret phrase
+#Secret provided in the Github webhook config. Change this to your own secret phrase
+SECRET_TOKEN = "EventsToSparkRoom"
 
 @app.route('/', methods =['POST'])
 
 def githubCommits():
     '''This function validates if the request is properly signed by Github.
-       (If not, this is a spoofed webhook.).
-       Then collects the webhook payload sent from Github and parses the parameters you want to send to Spark Room
+       (If not, this is a spoofed webhook).
+       Then collects the webhook payload sent from Github and parses the parameters you want to send to Spark Room.
     '''
     incoming_signature = request.headers.get('X-Hub-Signature')
     signature = 'sha1=' + hmac.new(SECRET_TOKEN, request.data, hashlib.sha1).hexdigest()
@@ -23,31 +24,32 @@ def githubCommits():
         json_file = request.json
         
         if 'commits' in json_file:
-            commit_id = json_file["commits"][0]['id']
-            commit_message = json_file["commits"][0]['message']
-            commit_time = json_file["commits"][0]['timestamp']
-            commit_url = json_file["commits"][0]['url']
-            commit_author_name = json_file["commits"][0]['author']['name']
-            committer_name = json_file["commits"][0]['committer']['name']
-            pusher_name = json_file["pusher"]['name']
-            repo_name = json_file["repository"]['name']
+            commit = json_file['commits'][0]
+            commit_id = commit['id']
+            commit_message = commit['message']
+            commit_time = commit['timestamp']
+            commit_url = commit['url']
+            commit_author_name = commit['author']['name']
+            committer_name = commit['committer']['name']
+            pusher_name = json_file['pusher']['name']
+            repo_name = json_file['repository']['name']
             results = """**Author**: %s\n\n**Committer**: %s\n\n**Pusher**: %s\n\n**Commit Message**: %s\n\n**Commit id**: %s\n\n**Time**: %s\n\n**Repository**: %s\n\n**Commit Link**: %s<br><br>""" % (commit_author_name,committer_name,pusher_name,commit_message,commit_id,commit_time,repo_name,commit_url)
             toSpark(results)
             return 'Ok'
             
         elif 'comment' in json_file:
-            comment_url = json_file["comment"]["html_url"]
-            comment_user = json_file["comment"]["user"]["login"]
-            commit_id = json_file["comment"]["commit_id"]
-            comment = json_file["comment"]["body"]
-            comment_repo = json_file["repository"]["name"]
+            comment_raw = json_file['comment']
+            comment_url = comment_raw['html_url']
+            comment_user = comment_raw['user']['login']
+            commit_id = comment_raw['commit_id']
+            comment = comment_raw['body']
+            comment_repo = json_file['repository']['name']
             results = """**User**: %s\n\n**Comment on Commit**: %s\n\n**Comment url**: %s\n\n**Commit id**: %s\n\n**Repository**: %s<br><br>""" % (comment_user,comment,comment_url,commit_id,comment_repo)
             toSpark(results)
-            return "Ok"
-            
-        
+            return 'Ok'
     else:
-        print "Spoofed Hook"
+        
+        return "Spoof Hook"
         
         
 # POST Function  that sends the commits & comments in markdown to a Spark room    
