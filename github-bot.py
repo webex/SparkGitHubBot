@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, abort
 import json 
 import urllib, urllib2
 import hmac
@@ -16,14 +16,19 @@ def githubCommits():
        (If not, this is a spoofed webhook).
        Then collects the webhook payload sent from Github and parses the parameters you want to send to Spark Room.
     '''
-    incoming_signature = request.headers.get('X-Hub-Signature')
+    headers = request.headers
+    incoming_signature = headers.get('X-Hub-Signature')
     signature = 'sha1=' + hmac.new(SECRET_TOKEN, request.data, hashlib.sha1).hexdigest()
     
-    if signature == incoming_signature:
+    if incoming_signature is None:
+       abort(401)
+    
+    elif signature == incoming_signature:
         
         json_file = request.json
         
-        if 'commits' in json_file:
+        
+        if 'push' == headers.get('X-GitHub-Event'):
             commit = json_file['commits'][0]
             commit_id = commit['id']
             commit_message = commit['message']
@@ -37,7 +42,7 @@ def githubCommits():
             toSpark(results)
             return 'Ok'
             
-        elif 'comment' in json_file:
+        elif 'commit_comment' == headers.get('X-GitHub-Event'):
             comment_raw = json_file['comment']
             comment_url = comment_raw['html_url']
             comment_user = comment_raw['user']['login']
@@ -47,9 +52,10 @@ def githubCommits():
             results = """**User**: %s\n\n**Comment on Commit**: %s\n\n**Comment url**: %s\n\n**Commit id**: %s\n\n**Repository**: %s<br><br>""" % (comment_user,comment,comment_url,commit_id,comment_repo)
             toSpark(results)
             return 'Ok'
+     
     else:
-        
-        return "Spoofed Hook"
+        print "Spoofed Hook"
+        abort(401)
         
         
 # POST Function  that sends the commits & comments in markdown to a Spark room    
