@@ -49,7 +49,7 @@ def githubCommits():
             return 'Ok'
     else:
         
-        return "Spoof Hook"
+        return "Spoofed Hook"
         
         
 # POST Function  that sends the commits & comments in markdown to a Spark room    
