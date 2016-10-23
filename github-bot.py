@@ -1,6 +1,6 @@
 from flask import Flask, request, abort
 import json 
-import urllib, urllib2
+import urllib2
 import hmac
 import hashlib
 
@@ -38,7 +38,7 @@ def githubCommits():
             committer_name = commit['committer']['name']
             pusher_name = json_file['pusher']['name']
             repo_name = json_file['repository']['name']
-            results = """**Author**: %s\n\n**Committer**: %s\n\n**Pusher**: %s\n\n**Commit Message**: %s\n\n**Commit id**: %s\n\n**Time**: %s\n\n**Repository**: %s\n\n**Commit Link**: %s<br><br>""" % (commit_author_name,committer_name,pusher_name,commit_message,commit_id,commit_time,repo_name,commit_url)
+            results = """**Author**: {0}\n\n**Committer**: {1}\n\n**Pusher**: {2}\n\n**Commit Message**: {3}\n\n**Commit id**: {4}\n\n**Time**: {5}\n\n**Repository**: {6}\n\n**Commit Link**: {7}<br><br>""".format(commit_author_name,committer_name,pusher_name,commit_message,commit_id,commit_time,repo_name,commit_url)
             toSpark(results)
             return 'Ok'
             
@@ -49,7 +49,7 @@ def githubCommits():
             commit_id = comment_raw['commit_id']
             comment = comment_raw['body']
             comment_repo = json_file['repository']['name']
-            results = """**User**: %s\n\n**Comment on Commit**: %s\n\n**Comment url**: %s\n\n**Commit id**: %s\n\n**Repository**: %s<br><br>""" % (comment_user,comment,comment_url,commit_id,comment_repo)
+            results = """**User**: {0}\n\n**Comment on Commit**: {1}\n\n**Comment url**: {2}\n\n**Commit id**: {3}\n\n**Repository**: {4}<br><br>""".format(comment_user,comment,comment_url,commit_id,comment_repo)
             toSpark(results)
             return 'Ok'
      
